@@ -1,14 +1,51 @@
 ---
-- name: Exemple de playbook Ansible      # Titre du playbook (peut être n'importe quoi)
-  hosts: localhost                       # S'exécute sur la machine locale (dans GitHub Actions ici)
-  connection: local                      # Utilise une connexion locale (pas de SSH)
+- name: Déploiement de l'application mobile Kotlin avec Docker
+  hosts: localhost
+  connection: local
+  vars:
+    project_dir: /tmp/my-kotlin-app
+    repo_url: "https://github.com/hassnae2003/App_AbsenceManager.git"
+    container_name: kotlin_app_container
+    docker_image: kotlin-app:latest
+    apk_output_path: app/build/outputs/apk/debug/app-debug.apk
 
-  tasks:                                 # Liste des tâches à exécuter
-    - name: Afficher un message dans la console
-      debug:
-        msg: "Le playbook Ansible fonctionne correctement !"   # Affiche un message
+  tasks:
 
-    - name: Créer un fichier de test
+    - name: Cloner le projet Kotlin depuis GitHub
+      git:
+        repo: "{{ repo_url }}"
+        dest: "{{ project_dir }}"
+        force: yes
+
+    - name: Donner les permissions d'exécution à gradlew
       file:
-        path: /tmp/fichier_test_ansible.txt                    # Chemin du fichier
-        state: touch                                           # Crée le fichier s’il n’existe pas
+        path: "{{ project_dir }}/gradlew"
+        mode: "0755"
+
+    - name: Compiler l'application Kotlin (APK)
+      command: ./gradlew assembleDebug
+      args:
+        chdir: "{{ project_dir }}"
+
+    - name: Créer une image Docker contenant l'APK
+      docker_image:
+        name: "{{ docker_image }}"
+        build:
+          path: "{{ project_dir }}"
+          dockerfile: Dockerfile
+        source: build
+      become: true
+
+    - name: Supprimer l'ancien conteneur s’il existe
+      docker_container:
+        name: "{{ container_name }}"
+        state: absent
+      become: true
+
+    - name: Lancer le conteneur Docker avec l'application Kotlin
+      docker_container:
+        name: "{{ container_name }}"
+        image: "{{ docker_image }}"
+        state: started
+        restart_policy: always
+      become: true
