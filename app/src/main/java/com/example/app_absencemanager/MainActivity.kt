@@ -1,15 +1,16 @@
 package com.example.app_absencemanager
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 
 class MainActivity : AppCompatActivity() {
-
     private lateinit var etNom: EditText
     private lateinit var etDate: EditText
     private lateinit var etRaison: EditText
     private lateinit var btnAjouter: Button
+    private lateinit var btnVoirArchives: Button
     private lateinit var listView: ListView
 
     private val listeAbsences = mutableListOf<Absence>()
@@ -23,6 +24,7 @@ class MainActivity : AppCompatActivity() {
         etDate = findViewById(R.id.etDate)
         etRaison = findViewById(R.id.etRaison)
         btnAjouter = findViewById(R.id.btnAjouter)
+        btnVoirArchives = findViewById(R.id.btnVoirArchives)
         listView = findViewById(R.id.listView)
 
         adapter = AbsenceAdapter(this, listeAbsences)
@@ -44,6 +46,12 @@ class MainActivity : AppCompatActivity() {
             } else {
                 Toast.makeText(this, "Veuillez remplir tous les champs", Toast.LENGTH_SHORT).show()
             }
+        }
+
+        btnVoirArchives.setOnClickListener {
+            val intent = Intent(this, ArchiveActivity::class.java)
+            intent.putExtra("listeAbsences", ArrayList(listeAbsences))
+            startActivity(intent)
         }
     }
 }
