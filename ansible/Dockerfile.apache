@@ -1,0 +1,6 @@
+FROM httpd:2.4
+
+# Copier l'APK dans le dossier public d'Apache
+COPY app-debug.apk /usr/local/apache2/htdocs/
+
+EXPOSE 80
