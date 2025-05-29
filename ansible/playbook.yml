@@ -8,7 +8,7 @@
     container_name: kotlin_app_container
     docker_image: kotlin-app:latest
     apk_output_path: app/build/outputs/apk/debug/app-debug.apk
-    apk_dest: /tmp/generated-apk/
+    apk_destination_path: /tmp/generated-apk/app-debug.apk
 
   tasks:
 
@@ -51,7 +51,13 @@
         restart_policy: always
       become: true
 
+    - name: Créer le dossier pour exporter l'APK
+      file:
+        path: "/tmp/generated-apk"
+        state: directory
+        mode: "0755"
+
     - name: Copier l'APK généré dans un dossier partagé
       copy:
         src: "{{ project_dir }}/{{ apk_output_path }}"
-        dest: "{{ apk_dest }}/app-debug.apk"
+        dest: "{{ apk_destination_path }}"
