@@ -19,7 +19,7 @@ jobs:
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
-          distribution: 'temurin'
+          distribution: temurin
           java-version: 17
 
       - name: Grant execute permission for gradlew
@@ -37,5 +37,11 @@ jobs:
           sudo systemctl start docker
           sudo systemctl enable docker
 
-      - name: Run Ansible playbook to build Docker image and deploy Apache server
+      - name: Run Ansible playbook to build Docker image and deploy Apache with APK
         run: ansible-playbook ansible/playbook.yml -i ansible/inventory.yml
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: apk-debug
+          path: /tmp/my-kotlin-app/app/build/outputs/apk/debug/app-debug.apk
