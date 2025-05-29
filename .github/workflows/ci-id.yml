@@ -2,9 +2,11 @@ name: Android CI with Ansible and Artifact
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   pull_request:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
   build:
@@ -20,6 +22,12 @@ jobs:
           distribution: 'temurin'
           java-version: 17
 
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
+
+      - name: Build APK with Gradle
+        run: ./gradlew assembleDebug
+
       - name: Install Ansible and Docker
         run: |
           sudo apt update
@@ -29,12 +37,10 @@ jobs:
           sudo systemctl start docker
           sudo systemctl enable docker
 
-      - name: Run Ansible playbook
-        run: |
-          mkdir -p /tmp/generated-apk
-          ansible-playbook ansible/playbook.yml -i ansible/inventory.yml
+      - name: Run Ansible Playbook
+        run: ansible-playbook ansible/playbook.yml -i ansible/inventory.yml
 
-      - name: Upload APK as GitHub Artifact
+      - name: Upload APK as Artifact
         uses: actions/upload-artifact@v3
         with:
           name: AbsenceManager-APK
