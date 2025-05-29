@@ -1,14 +1,14 @@
 ---
-- name: Déploiement de l'application mobile Kotlin et hébergement APK via Apache Docker
+- name: Déploiement de l'application mobile Kotlin et build Docker
   hosts: localhost
   connection: local
   vars:
     project_dir: /tmp/my-kotlin-app
     repo_url: "https://github.com/hassnae2003/App_AbsenceManager.git"
-    container_name: kotlin_apache_container
-    docker_image: kotlin-apache-server:latest
+    container_name: kotlin_app_container
+    docker_image: kotlin-app:latest
     apk_output_path: app/build/outputs/apk/debug/app-debug.apk
-    apache_build_dir: /tmp/apache-server
+    apk_dest: /tmp/generated-apk/
 
   tasks:
 
@@ -28,27 +28,13 @@
       args:
         chdir: "{{ project_dir }}"
 
-    - name: Créer le dossier pour Apache Docker build
-      file:
-        path: "{{ apache_build_dir }}"
-        state: directory
-
-    - name: Copier l'APK dans le dossier Apache
-      copy:
-        src: "{{ project_dir }}/{{ apk_output_path }}"
-        dest: "{{ apache_build_dir }}/app-debug.apk"
-
-    - name: Copier le Dockerfile Apache dans le dossier apache-server
-      copy:
-        src: ansible/Dockerfile.apache
-        dest: "{{ apache_build_dir }}/Dockerfile"
-
-    - name: Construire l'image Docker Apache avec APK
+    - name: Créer une image Docker contenant l'APK
       docker_image:
         name: "{{ docker_image }}"
+        source: build
         build:
-          path: "{{ apache_build_dir }}"
-        state: present
+          path: "{{ project_dir }}"
+          dockerfile: Dockerfile
       become: true
 
     - name: Supprimer l'ancien conteneur s’il existe
@@ -57,12 +43,15 @@
         state: absent
       become: true
 
-    - name: Lancer le conteneur Docker Apache avec l'APK
+    - name: Lancer le conteneur Docker avec l'application Kotlin
       docker_container:
         name: "{{ container_name }}"
         image: "{{ docker_image }}"
         state: started
         restart_policy: always
-        published_ports:
-          - "8080:80"
       become: true
+
+    - name: Copier l'APK généré dans un dossier partagé
+      copy:
+        src: "{{ project_dir }}/{{ apk_output_path }}"
+        dest: "{{ apk_dest }}/app-debug.apk"
