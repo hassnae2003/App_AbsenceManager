@@ -29,13 +29,10 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build
 
-      # 👉 Étape pour installer Ansible
       - name: Install Ansible
         run: |
           sudo apt update
-          sudo apt install -y ansible
+          sudo apt install -y ansible docker.io
 
-      # 👉 Étape pour exécuter un test Ansible
-      - name: Run Ansible ping on localhost
-        run: |
-          ansible all -i ansible/inventory.yml -m ping
+      - name: Run Ansible playbook to build Docker image and deploy
+        run: ansible-playbook ansible/deploy.yml -i ansible/inventory.yml
