@@ -33,7 +33,6 @@
         build:
           path: "{{ project_dir }}"
           dockerfile: Dockerfile
-        source: build
       become: true
 
     - name: Supprimer l'ancien conteneur s’il existe
