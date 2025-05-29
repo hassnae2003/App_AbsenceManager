@@ -41,7 +41,7 @@ jobs:
         run: ansible-playbook ansible/playbook.yml -i ansible/inventory.yml
 
       - name: Upload APK as Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: AbsenceManager-APK
           path: /tmp/generated-apk/app-debug.apk
