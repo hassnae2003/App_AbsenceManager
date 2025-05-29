@@ -39,4 +39,4 @@ jobs:
           sudo systemctl enable docker
 
       - name: Run Ansible playbook to build Docker image and deploy
-        run: ansible-playbook ansible/deploy.yml -i ansible/inventory.yml
+        run: ansible-playbook ansible/playbook.yml -i ansible/inventory.yml
