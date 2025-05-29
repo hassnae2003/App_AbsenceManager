@@ -30,6 +30,7 @@
     - name: Créer une image Docker contenant l'APK
       docker_image:
         name: "{{ docker_image }}"
+        source: build
         build:
           path: "{{ project_dir }}"
           dockerfile: Dockerfile
