@@ -1,13 +1,15 @@
 ---
-- name: Déploiement de l'application mobile Kotlin avec Docker
+- name: Déploiement de l'application mobile Kotlin et hébergement APK via Apache Docker
   hosts: localhost
   connection: local
   vars:
     project_dir: /tmp/my-kotlin-app
     repo_url: "https://github.com/hassnae2003/App_AbsenceManager.git"
-    container_name: kotlin_app_container
-    docker_image: kotlin-app:latest
     apk_output_path: app/build/outputs/apk/debug/app-debug.apk
+
+    apache_build_dir: /tmp/apache-server
+    apache_image_name: apk-apache-server:latest
+    apache_container_name: apk-apache-container
 
   tasks:
 
@@ -27,25 +29,42 @@
       args:
         chdir: "{{ project_dir }}"
 
-    - name: Créer une image Docker contenant l'APK
+    - name: Créer le dossier pour Apache Docker build
+      file:
+        path: "{{ apache_build_dir }}"
+        state: directory
+
+    - name: Copier l'APK dans le dossier Apache
+      copy:
+        src: "{{ project_dir }}/{{ apk_output_path }}"
+        dest: "{{ apache_build_dir }}/app-debug.apk"
+        remote_src: yes
+
+    - name: Copier le Dockerfile Apache dans le dossier apache-server
+      copy:
+        src: ansible/Dockerfile.apache
+        dest: "{{ apache_build_dir }}/Dockerfile"
+        remote_src: yes
+
+    - name: Construire l'image Docker Apache avec l'APK
       docker_image:
-        name: "{{ docker_image }}"
-        source: build
+        name: "{{ apache_image_name }}"
         build:
-          path: "{{ project_dir }}"
-          dockerfile: Dockerfile
+          path: "{{ apache_build_dir }}"
       become: true
 
-    - name: Supprimer l'ancien conteneur s’il existe
+    - name: Supprimer l'ancien conteneur Apache s’il existe
       docker_container:
-        name: "{{ container_name }}"
+        name: "{{ apache_container_name }}"
         state: absent
       become: true
 
-    - name: Lancer le conteneur Docker avec l'application Kotlin
+    - name: Lancer le conteneur Apache avec l'APK exposé sur le port 8080
       docker_container:
-        name: "{{ container_name }}"
-        image: "{{ docker_image }}"
+        name: "{{ apache_container_name }}"
+        image: "{{ apache_image_name }}"
         state: started
         restart_policy: always
+        ports:
+          - "8080:80"
       become: true
