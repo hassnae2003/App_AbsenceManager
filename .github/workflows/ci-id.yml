@@ -10,7 +10,6 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -27,7 +26,7 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Build with Gradle
-        run: ./gradlew build
+        run: ./gradlew assembleDebug
 
       - name: Install Ansible and Docker
         run: |
@@ -38,5 +37,5 @@ jobs:
           sudo systemctl start docker
           sudo systemctl enable docker
 
-      - name: Run Ansible playbook to build Docker image and deploy
+      - name: Run Ansible playbook to build Docker image and deploy Apache server
         run: ansible-playbook ansible/playbook.yml -i ansible/inventory.yml
