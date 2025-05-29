@@ -1,0 +1,14 @@
+---
+- name: Exemple de playbook Ansible      # Titre du playbook (peut être n'importe quoi)
+  hosts: localhost                       # S'exécute sur la machine locale (dans GitHub Actions ici)
+  connection: local                      # Utilise une connexion locale (pas de SSH)
+
+  tasks:                                 # Liste des tâches à exécuter
+    - name: Afficher un message dans la console
+      debug:
+        msg: "Le playbook Ansible fonctionne correctement !"   # Affiche un message
+
+    - name: Créer un fichier de test
+      file:
+        path: /tmp/fichier_test_ansible.txt                    # Chemin du fichier
+        state: touch                                           # Crée le fichier s’il n’existe pas
