@@ -28,3 +28,14 @@ jobs:
 
       - name: Build with Gradle
         run: ./gradlew build
+
+      # 👉 Étape pour installer Ansible
+      - name: Install Ansible
+        run: |
+          sudo apt update
+          sudo apt install -y ansible
+
+      # 👉 Étape pour exécuter un test Ansible
+      - name: Run Ansible ping on localhost
+        run: |
+          ansible all -i ansible/inventory.yml -m ping
